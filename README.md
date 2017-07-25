@@ -1,3 +1,3 @@
 # mole_catching
 
-+ [PDF](./moleCatching_cjy_170724.pdf)
+2017 DSM Jump Up Camp
