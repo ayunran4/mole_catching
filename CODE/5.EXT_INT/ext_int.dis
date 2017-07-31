@@ -9,11 +9,11 @@ Disassembly of section .text:
    2:	00 00       	nop
    4:	6f c0       	rjmp	.+222    	; 0xe4 <__vector_1>
    6:	00 00       	nop
-   8:	6c c0       	rjmp	.+216    	; 0xe2 <__bad_interrupt>
+   8:	84 c0       	rjmp	.+264    	; 0x112 <__vector_2>
    a:	00 00       	nop
-   c:	6a c0       	rjmp	.+212    	; 0xe2 <__bad_interrupt>
+   c:	99 c0       	rjmp	.+306    	; 0x140 <__vector_3>
    e:	00 00       	nop
-  10:	68 c0       	rjmp	.+208    	; 0xe2 <__bad_interrupt>
+  10:	ae c0       	rjmp	.+348    	; 0x16e <__vector_4>
   12:	00 00       	nop
   14:	66 c0       	rjmp	.+204    	; 0xe2 <__bad_interrupt>
   16:	00 00       	nop
@@ -104,8 +104,8 @@ Disassembly of section .text:
   b8:	11 e0       	ldi	r17, 0x01	; 1
   ba:	a0 e0       	ldi	r26, 0x00	; 0
   bc:	b1 e0       	ldi	r27, 0x01	; 1
-  be:	ea eb       	ldi	r30, 0xBA	; 186
-  c0:	f1 e0       	ldi	r31, 0x01	; 1
+  be:	e0 e4       	ldi	r30, 0x40	; 64
+  c0:	f2 e0       	ldi	r31, 0x02	; 2
   c2:	02 c0       	rjmp	.+4      	; 0xc8 <__do_copy_data+0x10>
   c4:	05 90       	lpm	r0, Z+
   c6:	0d 92       	st	X+, r0
@@ -126,8 +126,8 @@ Disassembly of section .text:
   d8:	ab 30       	cpi	r26, 0x0B	; 11
   da:	b2 07       	cpc	r27, r18
   dc:	e1 f7       	brne	.-8      	; 0xd6 <.do_clear_bss_loop>
-  de:	18 d0       	rcall	.+48     	; 0x110 <main>
-  e0:	6a c0       	rjmp	.+212    	; 0x1b6 <_exit>
+  de:	5e d0       	rcall	.+188    	; 0x19c <main>
+  e0:	ad c0       	rjmp	.+346    	; 0x23c <_exit>
 
 000000e2 <__bad_interrupt>:
   e2:	8e cf       	rjmp	.-228    	; 0x0 <__vectors>
@@ -135,7 +135,7 @@ Disassembly of section .text:
 000000e4 <__vector_1>:
 #define PORT_FND	PORTF
 
-unsigned char cnt;
+volatile unsigned char cnt;
 
 ISR(INT0_vect)
 {
@@ -148,152 +148,213 @@ ISR(INT0_vect)
   cnt++;
   f0:	80 91 0a 01 	lds	r24, 0x010A
   f4:	8f 5f       	subi	r24, 0xFF	; 255
+  f6:	80 93 0a 01 	sts	0x010A, r24
   if (cnt > 9)
-  f6:	8a 30       	cpi	r24, 0x0A	; 10
-  f8:	18 f4       	brcc	.+6      	; 0x100 <__vector_1+0x1c>
-
-unsigned char cnt;
-
-ISR(INT0_vect)
-{
-  cnt++;
-  fa:	80 93 0a 01 	sts	0x010A, r24
-  fe:	02 c0       	rjmp	.+4      	; 0x104 <__vector_1+0x20>
-  if (cnt > 9)
+  fa:	80 91 0a 01 	lds	r24, 0x010A
+  fe:	8a 30       	cpi	r24, 0x0A	; 10
+ 100:	10 f0       	brcs	.+4      	; 0x106 <__vector_1+0x22>
     cnt = 0;
- 100:	10 92 0a 01 	sts	0x010A, r1
+ 102:	10 92 0a 01 	sts	0x010A, r1
 }
- 104:	8f 91       	pop	r24
- 106:	0f 90       	pop	r0
- 108:	0f be       	out	0x3f, r0	; 63
- 10a:	0f 90       	pop	r0
- 10c:	1f 90       	pop	r1
- 10e:	18 95       	reti
+ 106:	8f 91       	pop	r24
+ 108:	0f 90       	pop	r0
+ 10a:	0f be       	out	0x3f, r0	; 63
+ 10c:	0f 90       	pop	r0
+ 10e:	1f 90       	pop	r1
+ 110:	18 95       	reti
 
-00000110 <main>:
+00000112 <__vector_2>:
+// External Interrupt1
+ISR(INT1_vect)
+{
+ 112:	1f 92       	push	r1
+ 114:	0f 92       	push	r0
+ 116:	0f b6       	in	r0, 0x3f	; 63
+ 118:	0f 92       	push	r0
+ 11a:	11 24       	eor	r1, r1
+ 11c:	8f 93       	push	r24
+  cnt++;
+ 11e:	80 91 0a 01 	lds	r24, 0x010A
+ 122:	8f 5f       	subi	r24, 0xFF	; 255
+ 124:	80 93 0a 01 	sts	0x010A, r24
+  if (cnt > 9)
+ 128:	80 91 0a 01 	lds	r24, 0x010A
+ 12c:	8a 30       	cpi	r24, 0x0A	; 10
+ 12e:	10 f0       	brcs	.+4      	; 0x134 <__vector_2+0x22>
+    cnt = 0;
+ 130:	10 92 0a 01 	sts	0x010A, r1
+}
+ 134:	8f 91       	pop	r24
+ 136:	0f 90       	pop	r0
+ 138:	0f be       	out	0x3f, r0	; 63
+ 13a:	0f 90       	pop	r0
+ 13c:	1f 90       	pop	r1
+ 13e:	18 95       	reti
 
+00000140 <__vector_3>:
+// External Interrupt2
+ISR(INT2_vect)
+{
+ 140:	1f 92       	push	r1
+ 142:	0f 92       	push	r0
+ 144:	0f b6       	in	r0, 0x3f	; 63
+ 146:	0f 92       	push	r0
+ 148:	11 24       	eor	r1, r1
+ 14a:	8f 93       	push	r24
+  cnt++;
+ 14c:	80 91 0a 01 	lds	r24, 0x010A
+ 150:	8f 5f       	subi	r24, 0xFF	; 255
+ 152:	80 93 0a 01 	sts	0x010A, r24
+  if (cnt > 9)
+ 156:	80 91 0a 01 	lds	r24, 0x010A
+ 15a:	8a 30       	cpi	r24, 0x0A	; 10
+ 15c:	10 f0       	brcs	.+4      	; 0x162 <__vector_3+0x22>
+    cnt = 0;
+ 15e:	10 92 0a 01 	sts	0x010A, r1
+}
+ 162:	8f 91       	pop	r24
+ 164:	0f 90       	pop	r0
+ 166:	0f be       	out	0x3f, r0	; 63
+ 168:	0f 90       	pop	r0
+ 16a:	1f 90       	pop	r1
+ 16c:	18 95       	reti
+
+0000016e <__vector_4>:
+// External Interrupt3
+ISR(INT3_vect)
+{
+ 16e:	1f 92       	push	r1
+ 170:	0f 92       	push	r0
+ 172:	0f b6       	in	r0, 0x3f	; 63
+ 174:	0f 92       	push	r0
+ 176:	11 24       	eor	r1, r1
+ 178:	8f 93       	push	r24
+  cnt++;
+ 17a:	80 91 0a 01 	lds	r24, 0x010A
+ 17e:	8f 5f       	subi	r24, 0xFF	; 255
+ 180:	80 93 0a 01 	sts	0x010A, r24
+  if (cnt > 9)
+ 184:	80 91 0a 01 	lds	r24, 0x010A
+ 188:	8a 30       	cpi	r24, 0x0A	; 10
+ 18a:	10 f0       	brcs	.+4      	; 0x190 <__vector_4+0x22>
+    cnt = 0;
+ 18c:	10 92 0a 01 	sts	0x010A, r1
+}
+ 190:	8f 91       	pop	r24
+ 192:	0f 90       	pop	r0
+ 194:	0f be       	out	0x3f, r0	; 63
+ 196:	0f 90       	pop	r0
+ 198:	1f 90       	pop	r1
+ 19a:	18 95       	reti
+
+0000019c <main>:
 int main(void)
 {
- 110:	aa e0       	ldi	r26, 0x0A	; 10
- 112:	b0 e0       	ldi	r27, 0x00	; 0
- 114:	ed e8       	ldi	r30, 0x8D	; 141
- 116:	f0 e0       	ldi	r31, 0x00	; 0
- 118:	42 c0       	rjmp	.+132    	; 0x19e <__prologue_saves__+0x20>
- 11a:	8a e0       	ldi	r24, 0x0A	; 10
+ 19c:	aa e0       	ldi	r26, 0x0A	; 10
+ 19e:	b0 e0       	ldi	r27, 0x00	; 0
+ 1a0:	e3 ed       	ldi	r30, 0xD3	; 211
+ 1a2:	f0 e0       	ldi	r31, 0x00	; 0
+ 1a4:	3f c0       	rjmp	.+126    	; 0x224 <__prologue_saves__+0x20>
+ 1a6:	8a e0       	ldi	r24, 0x0A	; 10
   unsigned char num[10] = {0x0F,0x1F,0x2F,0x3F,0x4F,0x5F,0x6F,0x7F,0x8F,0x9F};
- 11c:	e0 e0       	ldi	r30, 0x00	; 0
- 11e:	f1 e0       	ldi	r31, 0x01	; 1
- 120:	de 01       	movw	r26, r28
- 122:	11 96       	adiw	r26, 0x01	; 1
- 124:	01 90       	ld	r0, Z+
- 126:	0d 92       	st	X+, r0
- 128:	8a 95       	dec	r24
- 12a:	e1 f7       	brne	.-8      	; 0x124 <main+0x14>
- 12c:	8a b1       	in	r24, 0x0a	; 10
+ 1a8:	e0 e0       	ldi	r30, 0x00	; 0
+ 1aa:	f1 e0       	ldi	r31, 0x01	; 1
+ 1ac:	de 01       	movw	r26, r28
+ 1ae:	11 96       	adiw	r26, 0x01	; 1
+ 1b0:	01 90       	ld	r0, Z+
+ 1b2:	0d 92       	st	X+, r0
+ 1b4:	8a 95       	dec	r24
+ 1b6:	e1 f7       	brne	.-8      	; 0x1b0 <main+0x14>
+ 1b8:	8a b1       	in	r24, 0x0a	; 10
 
   DDR_SW |= (0<<PIN0)|(0<<PIN1)|(0<<PIN2)|(0<<PIN3);
- 12e:	8a b9       	out	0x0a, r24	; 10
- 130:	80 b3       	in	r24, 0x10	; 16
-  DDR_FND |= (1<<PORT1)|(1<<PORT4)|(1<<PORT5)|(1<<PORT6)|(1<<PORT7);
- 132:	82 6f       	ori	r24, 0xF2	; 242
- 134:	80 bb       	out	0x10, r24	; 16
- 136:	84 b1       	in	r24, 0x04	; 4
+ 1ba:	8a b9       	out	0x0a, r24	; 10
+ 1bc:	80 b3       	in	r24, 0x10	; 16
+  DDR_FND |= (1<<PORT4)|(1<<PORT5)|(1<<PORT6)|(1<<PORT7);
+ 1be:	80 6f       	ori	r24, 0xF0	; 240
+ 1c0:	80 bb       	out	0x10, r24	; 16
+ 1c2:	84 b1       	in	r24, 0x04	; 4
   DDR_LED |= (1<<PORT4)|(1<<PORT5)|(1<<PORT6)|(1<<PORT7);
- 138:	80 6f       	ori	r24, 0xF0	; 240
- 13a:	84 b9       	out	0x04, r24	; 4
- 13c:	82 e0       	ldi	r24, 0x02	; 2
+ 1c4:	80 6f       	ori	r24, 0xF0	; 240
+ 1c6:	84 b9       	out	0x04, r24	; 4
+ 1c8:	8a ea       	ldi	r24, 0xAA	; 170
 
-  EICRA = (1<<ISC01)|(0<<ISC00);  // Rising edge
- 13e:	80 93 69 00 	sts	0x0069, r24
- 142:	81 e0       	ldi	r24, 0x01	; 1
-  EIMSK = (1<<INT0);
- 144:	8d bb       	out	0x1d, r24	; 29
- 146:	8f ef       	ldi	r24, 0xFF	; 255
+  EICRA = (1<<ISC01)|(0<<ISC00)|(1<<ISC11)|(0<<ISC10)|(1<<ISC21)|(0<<ISC20)|(1<<ISC31)|(0<<ISC30);  // Falling edge
+ 1ca:	80 93 69 00 	sts	0x0069, r24
+ 1ce:	8f e0       	ldi	r24, 0x0F	; 15
+  EIMSK = (1<<INT0)|(1<<INT1)|(1<<INT2)|(1<<INT3);
+ 1d0:	8d bb       	out	0x1d, r24	; 29
+ 1d2:	10 92 c9 00 	sts	0x00C9, r1
+
+  UCSR1B = (0<<RXEN1)|(0<<TXEN1);
+ 1d6:	8f ef       	ldi	r24, 0xFF	; 255
 
   PORT_LED = 0xFF;
- 148:	85 b9       	out	0x05, r24	; 5
- 14a:	78 94       	sei
+ 1d8:	85 b9       	out	0x05, r24	; 5
+ 1da:	78 94       	sei
 
   sei();
- 14c:	2f ea       	ldi	r18, 0xAF	; 175
+ 1dc:	80 91 0a 01 	lds	r24, 0x010A
 	for (;;)
   {
-    if (!(PIN_SW & 0x01))
-		{
-      PORT_LED = 0xAF;
- 14e:	48 99       	sbic	0x09, 0	; 9
-  PORT_LED = 0xFF;
-
-  sei();
-	for (;;)
-  {
-    if (!(PIN_SW & 0x01))
- 150:	fe cf       	rjmp	.-4      	; 0x14e <main+0x3e>
- 152:	25 b9       	out	0x05, r18	; 5
-		{
-      PORT_LED = 0xAF;
- 154:	90 91 0a 01 	lds	r25, 0x010A
-      PORT_FND = num[cnt];
- 158:	e1 e0       	ldi	r30, 0x01	; 1
- 15a:	f0 e0       	ldi	r31, 0x00	; 0
- 15c:	ec 0f       	add	r30, r28
- 15e:	fd 1f       	adc	r31, r29
- 160:	e9 0f       	add	r30, r25
- 162:	f1 1d       	adc	r31, r1
- 164:	90 81       	ld	r25, Z
- 166:	91 bb       	out	0x11, r25	; 17
- 168:	3f ef       	ldi	r19, 0xFF	; 255
+    PORT_FND = num[cnt];
+ 1e0:	e1 e0       	ldi	r30, 0x01	; 1
+ 1e2:	f0 e0       	ldi	r31, 0x00	; 0
+ 1e4:	ec 0f       	add	r30, r28
+ 1e6:	fd 1f       	adc	r31, r29
+ 1e8:	e8 0f       	add	r30, r24
+ 1ea:	f1 1d       	adc	r31, r1
+ 1ec:	80 81       	ld	r24, Z
+ 1ee:	81 bb       	out	0x11, r24	; 17
+ 1f0:	2f ef       	ldi	r18, 0xFF	; 255
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 16a:	43 ec       	ldi	r20, 0xC3	; 195
- 16c:	99 e0       	ldi	r25, 0x09	; 9
- 16e:	31 50       	subi	r19, 0x01	; 1
- 170:	40 40       	sbci	r20, 0x00	; 0
- 172:	90 40       	sbci	r25, 0x00	; 0
- 174:	e1 f7       	brne	.-8      	; 0x16e <main+0x5e>
- 176:	00 c0       	rjmp	.+0      	; 0x178 <main+0x68>
- 178:	00 00       	nop
- 17a:	85 b9       	out	0x05, r24	; 5
-      _delay_ms(200);
-      PORT_LED = 0xFF;
- 17c:	e8 cf       	rjmp	.-48     	; 0x14e <main+0x3e>
+ 1f2:	83 ec       	ldi	r24, 0xC3	; 195
+ 1f4:	99 e0       	ldi	r25, 0x09	; 9
+ 1f6:	21 50       	subi	r18, 0x01	; 1
+ 1f8:	80 40       	sbci	r24, 0x00	; 0
+ 1fa:	90 40       	sbci	r25, 0x00	; 0
+ 1fc:	e1 f7       	brne	.-8      	; 0x1f6 <main+0x5a>
+ 1fe:	00 c0       	rjmp	.+0      	; 0x200 <main+0x64>
+ 200:	00 00       	nop
+ 202:	ec cf       	rjmp	.-40     	; 0x1dc <main+0x40>
 
-0000017e <__prologue_saves__>:
- 17e:	2f 92       	push	r2
- 180:	3f 92       	push	r3
- 182:	4f 92       	push	r4
- 184:	5f 92       	push	r5
- 186:	6f 92       	push	r6
- 188:	7f 92       	push	r7
- 18a:	8f 92       	push	r8
- 18c:	9f 92       	push	r9
- 18e:	af 92       	push	r10
- 190:	bf 92       	push	r11
- 192:	cf 92       	push	r12
- 194:	df 92       	push	r13
- 196:	ef 92       	push	r14
- 198:	ff 92       	push	r15
- 19a:	0f 93       	push	r16
- 19c:	1f 93       	push	r17
- 19e:	cf 93       	push	r28
- 1a0:	df 93       	push	r29
- 1a2:	cd b7       	in	r28, 0x3d	; 61
- 1a4:	de b7       	in	r29, 0x3e	; 62
- 1a6:	ca 1b       	sub	r28, r26
- 1a8:	db 0b       	sbc	r29, r27
- 1aa:	0f b6       	in	r0, 0x3f	; 63
- 1ac:	f8 94       	cli
- 1ae:	de bf       	out	0x3e, r29	; 62
- 1b0:	0f be       	out	0x3f, r0	; 63
- 1b2:	cd bf       	out	0x3d, r28	; 61
- 1b4:	09 94       	ijmp
+00000204 <__prologue_saves__>:
+ 204:	2f 92       	push	r2
+ 206:	3f 92       	push	r3
+ 208:	4f 92       	push	r4
+ 20a:	5f 92       	push	r5
+ 20c:	6f 92       	push	r6
+ 20e:	7f 92       	push	r7
+ 210:	8f 92       	push	r8
+ 212:	9f 92       	push	r9
+ 214:	af 92       	push	r10
+ 216:	bf 92       	push	r11
+ 218:	cf 92       	push	r12
+ 21a:	df 92       	push	r13
+ 21c:	ef 92       	push	r14
+ 21e:	ff 92       	push	r15
+ 220:	0f 93       	push	r16
+ 222:	1f 93       	push	r17
+ 224:	cf 93       	push	r28
+ 226:	df 93       	push	r29
+ 228:	cd b7       	in	r28, 0x3d	; 61
+ 22a:	de b7       	in	r29, 0x3e	; 62
+ 22c:	ca 1b       	sub	r28, r26
+ 22e:	db 0b       	sbc	r29, r27
+ 230:	0f b6       	in	r0, 0x3f	; 63
+ 232:	f8 94       	cli
+ 234:	de bf       	out	0x3e, r29	; 62
+ 236:	0f be       	out	0x3f, r0	; 63
+ 238:	cd bf       	out	0x3d, r28	; 61
+ 23a:	09 94       	ijmp
 
-000001b6 <_exit>:
- 1b6:	f8 94       	cli
+0000023c <_exit>:
+ 23c:	f8 94       	cli
 
-000001b8 <__stop_program>:
- 1b8:	ff cf       	rjmp	.-2      	; 0x1b8 <__stop_program>
+0000023e <__stop_program>:
+ 23e:	ff cf       	rjmp	.-2      	; 0x23e <__stop_program>
