@@ -31,7 +31,7 @@
 unsigned char rand_start;
 volatile unsigned char cnt;
 volatile unsigned char start;
-volatile unsigned char sw1,sw2,sw3,sw4;
+volatile unsigned char sw0,sw1,sw2,sw3;
 volatile unsigned char tic_time;
 
 // 8-bit Timer/Counter0 Overflow Interrupt
@@ -48,7 +48,7 @@ ISR(INT0_vect)
   if (!start)
     start = 1;
 
-  if (sw1)
+  if (sw0)
     cnt++;
 }
 
@@ -58,7 +58,7 @@ ISR(INT1_vect)
   if (!start)
     start = 1;
 
-  if (sw2)
+  if (sw1)
     cnt++;
 }
 
@@ -68,7 +68,7 @@ ISR(INT2_vect)
   if (!start)
     start = 1;
 
-  if (sw3)
+  if (sw2)
     cnt++;
 }
 
@@ -78,7 +78,7 @@ ISR(INT3_vect)
   if (!start)
     start = 1;
 
-  if (sw4)
+  if (sw3)
     cnt++;
 }
 
@@ -87,19 +87,19 @@ void check_led_on(unsigned int msec, unsigned char state)
 {
   switch (state)
   {
-    case LED0: sw1 = 1; break;
-    case LED1: sw2 = 1; break;
-    case LED2: sw3 = 1; break;
-    case LED3: sw4 = 1; break;
+    case LED0: sw0 = 1; break;
+    case LED1: sw1 = 1; break;
+    case LED2: sw2 = 1; break;
+    case LED3: sw3 = 1; break;
   }
 
   tic_time = 0;
   while (msec > tic_time);
 
+  sw0 = 0;
   sw1 = 0;
   sw2 = 0;
   sw3 = 0;
-  sw4 = 0;
 }
 
 void delay_ms(unsigned int msec)
