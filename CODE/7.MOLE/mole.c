@@ -255,7 +255,7 @@ int main(void)
   // ---- Global Interrupt : Enable ----
   sei();
 
-  // Turn off all LED
+  // Turn off FND & all LED
   PORT_LED = 0xFF;
   PORT_FND = fnd_num[0];
 
