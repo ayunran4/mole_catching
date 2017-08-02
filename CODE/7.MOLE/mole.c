@@ -130,10 +130,10 @@ unsigned int get_adc_data(unsigned char port)
       adc = (int)(adc/1023.0*3);
       switch (adc)
       {
-        case 0: adc = 100;break;
-        case 1: adc = 150;break;
-        case 2: adc = 200;break;
-        case 3: adc = 250;break;
+        case 0: adc = 100; break;
+        case 1: adc = 150; break;
+        case 2: adc = 200; break;
+        case 3: adc = 250; break;
       }
     }
 
@@ -277,5 +277,5 @@ int main(void)
       if (cnt == 9)
         game_clear();
     }
-	}
+  }
 }
