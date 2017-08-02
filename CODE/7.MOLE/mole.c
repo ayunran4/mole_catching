@@ -11,9 +11,6 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>   // rand()
 
-// #define DDR_SW		DDRD
-// #define PIN_SW		PIND
-
 #define DDR_LED		DDRB
 #define PORT_LED	PORTB
 
@@ -33,7 +30,9 @@
 
 volatile unsigned char cnt;
 volatile unsigned char start;
-volatile unsigned char led_status;
+volatile unsigned char rand_start;
+volatile unsigned char sw1,sw2,sw3,sw4;
+volatile unsigned char tic_time;
 
 // 8-bit Timer/Counter0 Overflow Interrupt
 ISR(TIMER0_OVF_vect)
@@ -46,65 +45,72 @@ ISR(TIMER0_OVF_vect)
 // INT0 : External Interrupt
 ISR(INT0_vect)
 {
-  if (led_status)
+  if (!start)
+    start = 1;
+
+  if (sw1)
     cnt++;
 
-  if (cnt > 9)
-  {
-    cnt = 0;
-    start = 0;
-  }
+  // if (cnt > 9)
+  // {
+  //   cnt = 0;
+  //   start = 0;
+  //   rand_start = 0;
+  // }
 }
 
 // INT1 : External Interrupt
 ISR(INT1_vect)
 {
-  if (led_status)
-    cnt++;
+  if (!start)
+    start = 1;
 
-  if (cnt > 9)
-  {
-    cnt = 0;
-    start = 0;
-  }
+  if (sw2)
+    cnt++;
 }
 
 // INT2 : External Interrupt
 ISR(INT2_vect)
 {
-  if (led_status)
-    cnt++;
+  if (!start)
+    start = 1;
 
-  if (cnt > 9)
-  {
-    cnt = 0;
-    start = 0;
-  }
+  if (sw3)
+    cnt++;
 }
 
 // INT3 : External Interrupt
 ISR(INT3_vect)
 {
-  if (led_status)
-    cnt++;
+  if (!start)
+    start = 1;
 
-  if (cnt > 9)
-  {
-    cnt = 0;
-    start = 0;
-  }
+  if (sw4)
+    cnt++;
 }
 
 // Check LED on
-void check_led_on(unsigned int msec)
+void check_led_on(unsigned int msec, unsigned char state)
+{
+  switch (state)
+  {
+    case LED0: sw1 = 1;break;
+    case LED1: sw2 = 1;break;
+    case LED2: sw3 = 1;break;
+    case LED3: sw4 = 1;break;
+  }
+  tic_time = 0;
+  while (msec > tic_time);
+  sw1 = 0;
+  sw2 = 0;
+  sw3 = 0;
+  sw4 = 0;
+}
+
+void delay_ms(unsigned int msec)
 {
   tic_time = 0;
-
-  while (msec > tic_time)
-  {
-    led_status = 1;
-  }
-  led_status = 0;
+  while (msec > tic_time);
 }
 
 // Read ADC data
@@ -113,7 +119,7 @@ unsigned int get_adc_data(unsigned char port)
     unsigned int adc;
 
     // Select ADC port
-    ADMUX |= (0<<REFS1)|(1<<REFS0)|port;
+    ADMUX = port|(1<<REFS0);
 
     // Start ADC Conversion
     ADCSRA |= (1<<ADSC);
@@ -122,18 +128,18 @@ unsigned int get_adc_data(unsigned char port)
     while (!(ADCSRA & (1<<ADIF)));
 
     adc = (int)ADCL+((int)ADCH<<8);
-    // Use CDS
+
+    // Use VR to change LED speed
     if (!port)
-      adc = (int)(adc/1023.0*9);
-    else
     {
-      adc = (int)(adc/1023.0*5);
-      switch (adc) {
+      adc = (int)(adc/1023.0*3);
+      switch (adc)
+      {
         case 0: adc = 100;break;
-        case 1: adc = 200;break;
-        case 2: adc = 300;break;
-        case 3: adc = 400;break;
-        case 4: adc = 500;break;
+        case 1: adc = 150;break;
+        case 2: adc = 200;break;
+        case 3: adc = 250;break;
+        //case 4: adc = 550;break;
       }
     }
 
@@ -143,7 +149,7 @@ unsigned int get_adc_data(unsigned char port)
 // Display LED
 void display_led_randomly(unsigned int msec)
 {
-  unsigned char random,led;
+  unsigned char random,led,state;
 
   // Return random number in 4,5,6,7
   random = rand()%4+4;
@@ -151,23 +157,55 @@ void display_led_randomly(unsigned int msec)
   // Display LED randomly
   switch (random)
   {
-    case LED0 : led = 0x10; break;
-    case LED1 : led = 0x20; break;
-    case LED2 : led = 0x40; break;
-    case LED3 : led = 0x80; break;
+    case LED0 : led = 0x10; state = 4;break;
+    case LED1 : led = 0x20; state = 5;break;
+    case LED2 : led = 0x40; state = 6;break;
+    case LED3 : led = 0x80; state = 7;break;
   }
 
   PORT_LED = ~led;
-  check_led_on(msec);
+  check_led_on(msec,state);
 
   PORT_LED = 0xFF;
-  _delay_ms(msec);
+  delay_ms(msec/2);
+}
+
+// Game Clear Performance
+void game_clear(void)
+{
+  int i;
+  unsigned char game_clear_led;
+
+  for (i=0;i<3;i++)
+  {
+    PORT_LED = 0x00;
+    _delay_ms(300);
+    PORT_LED = 0xFF;
+    _delay_ms(300);
+  }
+  PORT_LED = 0xFF;
+  game_clear_led = ~(0x08);
+  for (i=0;i<4;i++)
+  {
+    game_clear_led = game_clear_led << 1;
+    PORT_LED = game_clear_led;
+    _delay_ms(300);
+  }
+  for (i=0;i<4;i++)
+  {
+    PORT_LED = game_clear_led;
+    game_clear_led = game_clear_led >> 1;
+    game_clear_led |= 0x80;
+    _delay_ms(300);
+  }
+  cnt = 0;
+  start = 0;
+  rand_start = 0;
 }
 
 // GPIO Init
 void init_gpio(void)
 {
-  // DDR_SW |= (0<<PIN0)|(0<<PIN1)|(0<<PIN2)|(0<<PIN3);
   DDR_FND |= (1<<PORT4)|(1<<PORT5)|(1<<PORT6)|(1<<PORT7);
   DDR_LED |= (1<<PORT4)|(1<<PORT5)|(1<<PORT6)|(1<<PORT7);
 }
@@ -222,19 +260,25 @@ int main(void)
 
   // Turn off all LED
   PORT_LED = 0xFF;
+  PORT_FND = fnd_num[0];
 
   for (;;)
   {
-    PORT_FND = fnd_num[cnt];
-
-    // Set for random without duplication
-    if (!start)
+    if (start)
     {
-      srand(get_adc_data(ADC_CDS));
-      start = 1;
-    }
+      // Set for random without duplication
+      if (!rand_start)
+      {
+        srand(get_adc_data(ADC_CDS));
+        rand_start = 1;
+      }
 
-    // Get LED speed from VR
-    display_led_randomly(get_adc_data(ADC_VR));
+      // Get LED speed from VR
+      display_led_randomly(get_adc_data(ADC_VR));
+      PORT_FND = fnd_num[cnt];
+
+      if (cnt == 9)
+        game_clear();
+    }
 	}
 }
