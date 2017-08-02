@@ -28,9 +28,9 @@
 #define LED2  6
 #define LED3  7
 
+unsigned char rand_start;
 volatile unsigned char cnt;
 volatile unsigned char start;
-volatile unsigned char rand_start;
 volatile unsigned char sw1,sw2,sw3,sw4;
 volatile unsigned char tic_time;
 
@@ -50,13 +50,6 @@ ISR(INT0_vect)
 
   if (sw1)
     cnt++;
-
-  // if (cnt > 9)
-  // {
-  //   cnt = 0;
-  //   start = 0;
-  //   rand_start = 0;
-  // }
 }
 
 // INT1 : External Interrupt
@@ -94,13 +87,15 @@ void check_led_on(unsigned int msec, unsigned char state)
 {
   switch (state)
   {
-    case LED0: sw1 = 1;break;
-    case LED1: sw2 = 1;break;
-    case LED2: sw3 = 1;break;
-    case LED3: sw4 = 1;break;
+    case LED0: sw1 = 1; break;
+    case LED1: sw2 = 1; break;
+    case LED2: sw3 = 1; break;
+    case LED3: sw4 = 1; break;
   }
+
   tic_time = 0;
   while (msec > tic_time);
+
   sw1 = 0;
   sw2 = 0;
   sw3 = 0;
@@ -139,7 +134,6 @@ unsigned int get_adc_data(unsigned char port)
         case 1: adc = 150;break;
         case 2: adc = 200;break;
         case 3: adc = 250;break;
-        //case 4: adc = 550;break;
       }
     }
 
@@ -149,7 +143,7 @@ unsigned int get_adc_data(unsigned char port)
 // Display LED
 void display_led_randomly(unsigned int msec)
 {
-  unsigned char random,led,state;
+  unsigned char random,led;
 
   // Return random number in 4,5,6,7
   random = rand()%4+4;
@@ -157,14 +151,14 @@ void display_led_randomly(unsigned int msec)
   // Display LED randomly
   switch (random)
   {
-    case LED0 : led = 0x10; state = 4;break;
-    case LED1 : led = 0x20; state = 5;break;
-    case LED2 : led = 0x40; state = 6;break;
-    case LED3 : led = 0x80; state = 7;break;
+    case LED0 : led = 0x10; break;
+    case LED1 : led = 0x20; break;
+    case LED2 : led = 0x40; break;
+    case LED3 : led = 0x80; break;
   }
 
   PORT_LED = ~led;
-  check_led_on(msec,state);
+  check_led_on(msec,random);
 
   PORT_LED = 0xFF;
   delay_ms(msec/2);
@@ -176,28 +170,31 @@ void game_clear(void)
   int i;
   unsigned char game_clear_led;
 
-  for (i=0;i<3;i++)
+  for (i=0; i<3; i++)
   {
     PORT_LED = 0x00;
     _delay_ms(300);
     PORT_LED = 0xFF;
     _delay_ms(300);
   }
+
   PORT_LED = 0xFF;
   game_clear_led = ~(0x08);
-  for (i=0;i<4;i++)
+  for (i=0; i<4; i++)
   {
     game_clear_led = game_clear_led << 1;
     PORT_LED = game_clear_led;
     _delay_ms(300);
   }
-  for (i=0;i<4;i++)
+  for (i=0; i<4; i++)
   {
     PORT_LED = game_clear_led;
     game_clear_led = game_clear_led >> 1;
     game_clear_led |= 0x80;
     _delay_ms(300);
   }
+
+  // Reset game
   cnt = 0;
   start = 0;
   rand_start = 0;
@@ -215,7 +212,7 @@ void init_adc(void)
 {
   // AVCC with external capacitor on AREF pin
   ADMUX |= (0<<REFS1)|(1<<REFS0);
-  // PF1 - CDS
+  // PF0 : VR, PF1 : CDS
   ADMUX |= (0<<MUX4)|(0<<MUX3)|(0<<MUX2)|(0<<MUX1)|(1<<MUX0);
   // Enable ADC, Division factor = 128 (= 125kHz) : 50kHz < 125kHz < 200kHz
   ADCSRA |= (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
