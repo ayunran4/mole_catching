@@ -167,6 +167,8 @@ void display_led_randomly(unsigned int msec)
 // Game Clear Performance
 void game_clear(void)
 {
+  cli();
+
   int i;
   unsigned char game_clear_led;
 
@@ -194,6 +196,7 @@ void game_clear(void)
     _delay_ms(300);
   }
 
+  sei();
   // Reset game
   cnt = 0;
   start = 0;
